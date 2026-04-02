@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tremor Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<h2>Real-Time Tremor Simulation</h2>
+
+<div id="graph"></div>
+
+<h3 id="status">Status: --</h3>
+
+<script>
+let x = [];
+let y = [];
+
+Plotly.newPlot('graph', [{
+    x: x,
+    y: y,
+    mode: 'lines',
+    line: {color: 'blue'}
+}]);
+
+function updateData() {
+    fetch('/data')
+    .then(res => res.json())
+    .then(data => {
+        x.push(new Date().toLocaleTimeString());
+        y.push(data.value);
+
+        if (x.length > 50) {
+            x.shift();
+            y.shift();
+        }
+
+        Plotly.update('graph', {
+            x: [x],
+            y: [y]
+        });
+
+        // Tremor detection status
+        if (data.detected) {
+            document.getElementById("status").innerText = "⚠ Tremor Detected";
+            document.getElementById("status").style.color = "red";
+        } else {
+            document.getElementById("status").innerText = "✅ Stable";
+            document.getElementById("status").style.color = "green";
+        }
+    });
+}
+
+// Update every 200ms
+setInterval(updateData, 200);
+</script>
+
+</body>
+</html>
