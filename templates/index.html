@@ -1,59 +1,164 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Tremor Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #status {
+            font-size: 20px;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .stable {
+            background-color: #064e3b;
+            color: #34d399;
+        }
+
+        .tremor {
+            background-color: #7f1d1d;
+            color: #f87171;
+        }
+
+        .glove {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .finger {
+            padding: 15px;
+            border-radius: 10px;
+            background: #334155;
+            width: 80px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .active {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Real-Time Tremor Simulation</h2>
+    <div class="container">
+        <h1>🧠 Tremor Detection Dashboard</h1>
 
-<div id="graph"></div>
+        <div class="card">
+            <div id="graph"></div>
+        </div>
 
-<h3 id="status">Status: --</h3>
+        <div class="card">
+            <div id="status" class="stable">Status: --</div>
+        </div>
 
-<script>
-let x = [];
-let y = [];
+        <div class="card">
+            <h3 style="text-align:center;">🧤 Glove Motor Activity</h3>
+            <div class="glove">
+                <div class="finger" id="f0">Thumb</div>
+                <div class="finger" id="f1">Index</div>
+                <div class="finger" id="f2">Middle</div>
+                <div class="finger" id="f3">Ring</div>
+                <div class="finger" id="f4">Little</div>
+            </div>
+        </div>
+    </div>
 
-Plotly.newPlot('graph', [{
-    x: x,
-    y: y,
-    mode: 'lines',
-    line: {color: 'blue'}
-}]);
+    <script>
+        let x = [];
+        let y = [];
 
-function updateData() {
-    fetch('/data')
-    .then(res => res.json())
-    .then(data => {
-        x.push(new Date().toLocaleTimeString());
-        y.push(data.value);
-
-        if (x.length > 50) {
-            x.shift();
-            y.shift();
-        }
-
-        Plotly.update('graph', {
-            x: [x],
-            y: [y]
+        Plotly.newPlot('graph', [{
+            x: x,
+            y: y,
+            mode: 'lines',
+            line: { color: '#38bdf8', width: 3 }
+        }], {
+            paper_bgcolor: '#1e293b',
+            plot_bgcolor: '#1e293b',
+            font: { color: '#e2e8f0' },
+            margin: { t: 30 }
         });
 
-        // Tremor detection status
-        if (data.detected) {
-            document.getElementById("status").innerText = "⚠ Tremor Detected";
-            document.getElementById("status").style.color = "red";
-        } else {
-            document.getElementById("status").innerText = "✅ Stable";
-            document.getElementById("status").style.color = "green";
-        }
-    });
+        function updateData() {
+    fetch('/data')
+        .then(res => res.json())
+        .then(data => {
+            x.push(new Date().toLocaleTimeString());
+            y.push(data.value);
+
+            if (x.length > 50) {
+                x.shift();
+                y.shift();
+            }
+
+            Plotly.update('graph', {
+                x: [x],
+                y: [y]
+            });
+
+            const status = document.getElementById("status");
+
+            if (data.detected) {
+                status.innerText = "⚠ Tremor Detected";
+                status.className = "tremor";
+            } else {
+                status.innerText = "✅ Stable";
+                status.className = "stable";
+            }
+
+            // ✅ FIXED: glove logic INSIDE here
+            for (let i = 0; i < 5; i++) {
+                let finger = document.getElementById("f" + i);
+
+                if (data.motors[i] === 1) {
+                    finger.classList.add("active");
+                } else {
+                    finger.classList.remove("active");
+                }
+            }
+        });
 }
 
-// Update every 200ms
-setInterval(updateData, 200);
-</script>
+        setInterval(updateData, 200);
+    </script>
 
 </body>
+
 </html>

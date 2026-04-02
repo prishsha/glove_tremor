@@ -17,9 +17,22 @@ def generate_tremor():
     
     return tremor + noise
 
+def generate_motor_pattern(detected):
+    if not detected:
+        return [0, 0, 0, 0, 0]
+
+    # simple alternating pattern
+    return [
+        np.random.randint(0, 2),
+        np.random.randint(0, 2),
+        np.random.randint(0, 2),
+        np.random.randint(0, 2),
+        np.random.randint(0, 2)
+    ]
+
 # Detection logic
 def detect_tremor(value):
-    threshold = 0.6
+    threshold = 0.7
     return abs(value) > threshold
 
 @app.route('/')
@@ -29,12 +42,23 @@ def index():
 @app.route('/data')
 def data():
     value = generate_tremor()
-    detected = detect_tremor(value)
+    detected = bool(detect_tremor(value))
+
+    motors = generate_motor_pattern(detected)
 
     return jsonify({
-        'value': value,
-        'time': time.time(),
-        'detected': detected
+        'value': float(value),
+        'detected': detected,
+        'motors': motors
+    })
+
+@app.route('/esp')
+def esp():
+    value = generate_tremor()
+    detected = bool(detect_tremor(value))
+
+    return jsonify({
+        'motor': int(detected)  # 1 or 0
     })
 
 if __name__ == '__main__':
