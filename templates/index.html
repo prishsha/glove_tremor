@@ -117,46 +117,46 @@
         });
 
         function updateData() {
-    fetch('/data')
-        .then(res => res.json())
-        .then(data => {
-            x.push(new Date().toLocaleTimeString());
-            y.push(data.value);
+            fetch('/data')
+                .then(res => res.json())
+                .then(data => {
+                    x.push(new Date().toLocaleTimeString());
+                    y.push(data.value);
 
-            if (x.length > 50) {
-                x.shift();
-                y.shift();
-            }
+                    if (x.length > 50) {
+                        x.shift();
+                        y.shift();
+                    }
 
-            Plotly.update('graph', {
-                x: [x],
-                y: [y]
-            });
+                    Plotly.update('graph', {
+                        x: [x],
+                        y: [y]
+                    });
 
-            const status = document.getElementById("status");
+                    const status = document.getElementById("status");
 
-            if (data.detected) {
-                status.innerText = "⚠ Tremor Detected";
-                status.className = "tremor";
-            } else {
-                status.innerText = "✅ Stable";
-                status.className = "stable";
-            }
+                    if (data.detected) {
+                        status.innerText = "⚠ Tremor Detected";
+                        status.className = "tremor";
+                    } else {
+                        status.innerText = "✅ Stable";
+                        status.className = "stable";
+                    }
 
-            // ✅ FIXED: glove logic INSIDE here
-            for (let i = 0; i < 5; i++) {
-                let finger = document.getElementById("f" + i);
+                    // ✅ FIXED: glove logic INSIDE here
+                    for (let i = 0; i < 5; i++) {
+                        let finger = document.getElementById("f" + i);
 
-                if (data.motors[i] === 1) {
-                    finger.classList.add("active");
-                } else {
-                    finger.classList.remove("active");
-                }
-            }
-        });
-}
+                        if (data.motors[i] === 1) {
+                            finger.classList.add("active");
+                        } else {
+                            finger.classList.remove("active");
+                        }
+                    }
+                });
+        }
 
-        setInterval(updateData, 200);
+        setInterval(updateData, 1000);
     </script>
 
 </body>
