@@ -32,7 +32,7 @@ def generate_motor_pattern(detected):
 
 # Detection logic
 def detect_tremor(value):
-    threshold = 0.7
+    threshold = 0.6
     return abs(value) > threshold
 
 @app.route('/')
